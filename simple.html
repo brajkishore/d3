@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style> /* set the CSS */
+ 
+body { font: 12px Arial;}
+ 
+path { 
+  stroke: steelblue;
+  stroke-width: 2;
+  fill: none;
+}
+ 
+.axis path,
+.axis line {
+	fill: none;
+	stroke: grey;
+	stroke-width: 1;
+	shape-rendering: crispEdges;
+}
+ 
+</style>
+<body>
+ 
+<!-- load the d3.js library -->	
+<script type="text/javascript" src="d3.v3.min.js"></script>
+ 
+<script>
+ 
+// Set the dimensions of the canvas / graph
+var	margin = {top: 50, right: 50, bottom: 100, left: 50},
+	width = 1000 - margin.left - margin.right,
+	height = 600 - margin.top - margin.bottom;
+ 
+// Parse the date / time
+var	parseDate = d3.time.format("%d-%b-%y").parse;
+ 
+// Set the ranges
+var x = d3.scale.ordinal()
+    .rangeRoundBands([0, width], .1);
+	
+var	y = d3.scale.linear().range([height, 0]);
+ 
+
+var xAxis = d3.svg.axis()
+.scale(x)
+.orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
+ 
+// Define the line
+var	valueline = d3.svg.line()
+	.x(function(d) { return x(d.label); })
+	.y(function(d) { return y(d.rt); });
+    
+// Adds the svg canvas
+var	svg = d3.select("body")
+	.append("svg")
+		.attr("width", width + margin.left + margin.right)
+		.attr("height", height + margin.top + margin.bottom)
+	.append("g")
+		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+ 	
+svg.append("text")
+        .attr("x", (width / 2))             
+        .attr("y", 0 - (margin.top / 2))
+        .attr("text-anchor", "middle")  
+        .style("font-size", "16px") 
+        .style("text-decoration", "none")  
+        .text("API Trends");
+			
+svg.append("text")
+        .attr("x", (width / 2))             
+        .attr("y", height+margin.bottom)
+        .attr("text-anchor", "bottom")  
+        .style("font-size", "16px") 
+        .style("text-decoration", "none")  
+        .text("Build Label");
+		
+			
+		
+		
+// Get the data
+d3.csv("data.csv", function(error, data) {
+	
+	var barWidth=width/data.length;
+	
+	
+	
+	data.forEach(function(d) {
+		d.rt =+d.rt;		
+	});
+ 
+	// Scale the range of the data
+	y.domain([0, d3.max(data, function(d) { return d.rt; })]);
+	x.domain(data.map(function(d) { return d.label; }));
+	
+	
+	var bar = svg.selectAll("g")
+		.data(data)
+		.enter().append("g")		
+		.attr("transform", function(d) { return "translate(" + x(d.label) + ",0)"; });
+		
+	  
+  bar.append("text")
+      .attr("x",barWidth/2)
+      .attr("y", function(d) { return y(d.rt)-15; })
+      .attr("dy", ".75em")
+      .text(function(d) { return d.rt; });
+	  
+	  
+	  
+ 
+	// Add the valueline path.
+	svg.append("path")	
+		.attr("class", "line")
+		.attr("d", valueline(data))
+		.attr("transform", function(d) { return "translate(" + barWidth/2 + ",0)"; });
+		
+ 
+	// Add the X Axis
+	var bottom=svg.append("g")		
+		.attr("class", "x axis")
+		.attr("transform", "translate(0," + height + ")")
+		.call(xAxis)
+		.selectAll("text")
+		.attr("y", 0)
+		.attr("x",10)
+		.attr("dy", ".90em")
+		.attr("transform", "rotate(45,0,0)")
+		.style("text-anchor", "start");
+		
+	bottom.append("text")
+		  .attr("transform", "rotate(-90)")
+		  .attr("y", 6)
+		  .attr("dy", ".71em")
+		  .style("text-anchor", "start")
+		  .text("Response Time (ms)");
+			
+ 
+	// Add the Y Axis
+	svg.append("g")		
+		.attr("class", "y axis")
+		.call(yAxis)
+		.append("text")
+		  .attr("transform", "rotate(-90)")
+		  .attr("y", 6)
+		  .attr("dy", ".71em")
+		  .style("text-anchor", "end")
+		  .text("Response Time (ms)");
+		  
+ 
+});
+ 
+</script>
+</body>
