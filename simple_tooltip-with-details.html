@@ -3,15 +3,7 @@
 <style> /* set the CSS */
 
 body {
-  background-color: #e0f2f1    
-}
-
-#graph{
-
-  align:center
-}
-.svgClass{
-  background-color: #eeeeee;  
+  background-color: #F1F3F3    
 }
 .axis {
 	font: 10px sans-serif;
@@ -20,14 +12,14 @@ body {
 .axis path,
 .axis line {
   fill: none;
-  stroke: #00695c;
+  stroke: #D4D8DA;
   stroke-width: 2px;
   shape-rendering: crispEdges;
 }
 
 .line {
   fill: none;
-  stroke: #00695c;
+  stroke: #6F257F;
   stroke-width: 2px;
 }
 
@@ -37,24 +29,33 @@ body {
 }
 
 .focus circle {
-  fill: #64ffda;
-  stroke: #00bfa5;
-  stroke-width: 3px;
+  fill: #F1F3F3;
+  stroke: #6F257F;
+  stroke-width: 5px;
 }
   
 .hover-line {
-  stroke: #00bfa5;
+  stroke: #6F257F;
   stroke-width: 2px;
   stroke-dasharray: 3,3;
 }
-
-.dotClass{
-fill:#004d40
+ 
+ div.tooltip {
+  position: absolute;	
+  text-align: center;	
+  width: 60px;	
+  height: 28px;		
+  padding: 2px;	
+  font: 12px sans-serif;	
+  background: lightsteelblue;	
+  border: 0px;					
+  border-radius: 8px;
+ /*  pointer-events: none;	This line needs to be removed */
+	
 }
 </style>
 <body>
  
- <div id="graph"/>
 <!-- load the d3.js library -->	
 <script type="text/javascript" src="d3.v3.min.js"></script>
  
@@ -65,6 +66,9 @@ var	margin = {top: 50, right: 50, bottom: 100, left: 50},
 	width = 1000 - margin.left - margin.right,
 	height = 600 - margin.top - margin.bottom;
  
+// Parse the date / time
+var	parseDate = d3.time.format("%d-%b-%y").parse;
+ 
 // Set the ranges
 var x = d3.scale.ordinal()
     .rangeRoundBands([0, width], .1);
@@ -72,6 +76,8 @@ var x = d3.scale.ordinal()
 var	y = d3.scale.linear().range([height, 0]);
  
  
+var bisectLabel = d3.bisector(function(d) { return d.label; }).left;
+
 var xAxis = d3.svg.axis()
 .scale(x)
 .orient("bottom");
@@ -84,17 +90,20 @@ var yAxis = d3.svg.axis()
 var	valueline = d3.svg.line()
 	.x(function(d) { return x(d.label); })
 	.y(function(d) { return y(d.rt); });
+
+// Define 'div' for tooltips
+var div = d3.select("body")
+	.append("div")  // declare the tooltip div 
+	.attr("class", "tooltip")              // apply the 'tooltip' class
+	.style("opacity", 0);                  // set the opacity to nil
     
 // Adds the svg canvas
-var	svg = d3.select("#graph")
+var	svg = d3.select("body")
 	.append("svg")
 		.attr("width", width + margin.left + margin.right)
 		.attr("height", height + margin.top + margin.bottom)
-		.attr("class","svgClass")
-		.append("g")
+	.append("g")
 		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-		
-		
  	
 svg.append("text")
         .attr("x", (width / 2))             
@@ -106,8 +115,8 @@ svg.append("text")
 			
 svg.append("text")
         .attr("x", (width / 2))             
-        .attr("y", height+margin.bottom-15)
-        .attr("text-anchor", "bottom")  		
+        .attr("y", height+margin.bottom)
+        .attr("text-anchor", "bottom")  
         .style("font-size", "16px") 
         .style("text-decoration", "none")  
         .text("Build Label");
@@ -189,68 +198,29 @@ var bar = svg.selectAll("g")
 		  .text("Response Time (ms)");
 		  
 		  
-
-	var focus = svg.append("g")
-        .attr("class", "focus")
-        .style("display", "none");
-
-    focus.append("line")
-        .attr("class", "x-hover-line hover-line")
-        .attr("y1", 0)
-        .attr("y2", height);
-
-    focus.append("line")
-        .attr("class", "y-hover-line hover-line")
-        .attr("x1", width)
-        .attr("x2", width);
-
-    focus.append("circle")
-        .attr("r", 7.5);
-
-    focus.append("text")
-        .attr("x", 15)
-      	.attr("dy", ".31em");
-		
+// draw the scatterplot
 	svg.selectAll("dot")									
 		.data(data)											
 		.enter().append("circle")								
-		.attr("r", 3)	
-		.attr("cx", function(d) { return (x(d.label)+barWidth/2-1); })		 
+		.attr("r", 5)	
+		.attr("cx", function(d) { return x(d.label); })		 
 		.attr("cy", function(d) { return y(d.rt); })
-		.attr("class","dotClass");
-	
-	
-	svg.append("rect")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-        .attr("class", "overlay")
-        .attr("width", width)
-        .attr("height", height)        
-		.on("mouseover", function() { focus.style("display", null); })
-        .on("mouseout", function() { focus.style("display", "none"); })
-        .on("mousemove", mousemove);
-
-	
-    function mousemove() {
-     
-	 
-		var xPos = d3.mouse(this)[0];
-	    		
-		var xDomain = x.domain(),
-			xRange = x.range();
-	
-		var label = xDomain[d3.bisect(xRange, xPos) - 1];
-		
-
-		var index=d3.bisect(xRange, xPos);
-		var datum=data[index];
-		
-      focus.attr("transform", "translate(" + (x(datum.label)+barWidth/2-1) + "," + (y(datum.rt)) + ")");
-      focus.select("text").text(function() { return datum.rt; });
-      focus.select(".x-hover-line").attr("y2", height-y(datum.rt));
-      focus.select(".y-hover-line").attr("x2",width+width);
-	  
-    }
-		  
+	// Tooltip stuff after this
+	    .on("mouseover", function(d) {		
+            div.transition()
+				.duration(10)	
+				.style("opacity", 0);
+			div.transition()
+				.duration(200)	
+				.style("opacity", .9);	
+			div	.html(
+				'<a href= "http://google.com">' + // The first <a> tag
+				d.label +
+				"</a>" +                          // closing </a> tag
+				"<br/>"  + d.rt)	 
+				.style("left", (d3.event.pageX) + "px")			 
+				.style("top", (d3.event.pageY - 28) + "px");
+			});		  
  
 });
  
