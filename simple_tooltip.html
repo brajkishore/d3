@@ -62,6 +62,8 @@ var x = d3.scale.ordinal()
 	
 var	y = d3.scale.linear().range([height, 0]);
  
+ 
+var bisectLabel = d3.bisector(function(d) { return d.label; }).left;
 
 var xAxis = d3.svg.axis()
 .scale(x)
@@ -125,11 +127,13 @@ var bar = svg.selectAll("g")
 		.attr("transform", function(d) { return "translate(" + x(d.label) + ",0)"; });
 		
 	  
+	  /*
   bar.append("text")
       .attr("x",barWidth/2)
       .attr("y", function(d) { return y(d.rt)-15; })
       .attr("dy", ".75em")
       .text(function(d) { return d.rt; });
+	  */
 	  
 	  
 	  
@@ -200,44 +204,35 @@ var bar = svg.selectAll("g")
 	
 	
 	
-		bar.append("rect")
+	svg.append("rect")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
         .attr("class", "overlay")
         .attr("width", width)
-        .attr("height", height)
-        .on("mouseover", mouseover)
-        .on("mouseout", mouseout)
+        .attr("height", height)        
+		.on("mouseover", function() { focus.style("display", null); })
+        .on("mouseout", function() { focus.style("display", "none"); })
         .on("mousemove", mousemove);
-
-		
-	function mouseover(d) {
-      console.log(d);
-      d3.select("."+d.key).classed("line-hover", true);
-      focus.attr("transform", "translate(" + x(d.date) + "," + y(d.value) + ")");
-      focus.select("text").text(d.date);
-    }
-  
-    function mouseout(d) {
-      d3.select("."+d.key).classed("line-hover", false);
-      focus.attr("transform", "translate(-100,-100)");
-    }
 
 	
     function mousemove() {
      
-	 console.log(d3.mouse(this)[0]);
-	 /*
-	 var x0 = x.invert(d3.mouse(this)[0]),
-          i = bisectDate(data, x0, 1),
-          d0 = data[i - 1],
-          d1 = data[i],
-          d = x0 - d0.year > d1.year - x0 ? d1 : d0;
-      focus.attr("transform", "translate(" + x(d.year) + "," + y(d.value) + ")");
-      focus.select("text").text(function() { return d.value; });
-      focus.select(".x-hover-line").attr("y2", height - y(d.value));
-      focus.select(".y-hover-line").attr("x2", width + width);
+	 
+		var xPos = d3.mouse(this)[0];
+	    		
+		var xDomain = x.domain(),
+			xRange = x.range();
+	
+		var label = xDomain[d3.bisect(xRange, xPos) - 1];
+		
+
+		var index=d3.bisect(xRange, xPos);
+		var datum=data[index];
+		
+      focus.attr("transform", "translate(" + (x(datum.label)+barWidth/2-1) + "," + (y(datum.rt)) + ")");
+      focus.select("text").text(function() { return datum.rt; });
+      focus.select(".x-hover-line").attr("y2", height-y(datum.rt));
+      focus.select(".y-hover-line").attr("x2",width+width);
 	  
-	  */
     }
 		  
  
