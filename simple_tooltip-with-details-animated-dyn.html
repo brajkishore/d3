@@ -111,35 +111,39 @@ var div = d3.select("body").append("div")
     .attr("class", "tooltip")               
     .style("opacity", 0);		
  	
-svg.append("text")
-        .attr("x", (width / 2))             
-        .attr("y", 0 - (margin.top / 2))
-        .attr("text-anchor", "middle")  
-        .style("font-size", "16px") 
-        .style("text-decoration", "none")  
-        .text("API Trends");
-			
+
 svg.append("text")
         .attr("x", (width / 2))             
         .attr("y", height+margin.bottom-15)
         .attr("text-anchor", "bottom")  		
-        .style("font-size", "16px") 
+        .style("font-size", "20px") 
         .style("text-decoration", "none")  
         .text("Build Label");
 					
 var fileName=getQueryValue("file");
-		
+var url="https://raw.githubusercontent.com/brajkishore/d3/master/"+fileName;
+	
 // Get the data
-d3.csv(fileName, function(error, data) {
+d3.csv(url, function(error, data) {
 	
 	var barWidth=width/data.length;
-	
-	
+	var method='';
+	var api='';
 	
 	data.forEach(function(d) {
-		d.rt =+d.rt;		
+		d.rt =+d.rt;
+		method=d.method;
+		api=d.api;
 	});
- 
+	
+	svg.append("text")
+        .attr("x", (width / 2))             
+        .attr("y", 0 - (margin.top / 2))
+        .attr("text-anchor", "middle")  
+        .style("font-size", "20px") 
+        .style("text-decoration", "none")  
+        .text(method+" "+api);
+							
 	// Scale the range of the data
 	y.domain([0, d3.max(data, function(d) { return d.rt; })]);
 	x.domain(data.map(function(d) { return d.label; }));
@@ -151,17 +155,7 @@ var bar = svg.selectAll("g")
 		.attr("transform", function(d) { return "translate(" + x(d.label) + ",0)"; });
 		
 		
-	  
-	  /*
-  bar.append("text")
-      .attr("x",barWidth/2)
-      .attr("y", function(d) { return y(d.rt)-15; })
-      .attr("dy", ".75em")
-      .text(function(d) { return d.rt; });
-	  */
-	  
-	  
-	  
+ 
  
 	// Add the valueline path.
 	var path=svg.append("path")	
@@ -189,16 +183,9 @@ var bar = svg.selectAll("g")
 		.attr("x",10)
 		.attr("dy", ".90em")
 		.attr("transform", "rotate(45,0,0)")
-		.style("text-anchor", "start");
-		
-	bottom.append("text")
-		  .attr("transform", "rotate(-90)")
-		  .attr("y", 6)
-		  .attr("dy", ".71em")
-		  .style("text-anchor", "start")
-		  .text("Response Time (ms)");
-			
- 
+		.style("text-anchor", "start")
+		.style("font-size", "11px");
+		 
 	// Add the Y Axis
 	svg.append("g")		
 		.attr("class", "y axis")
@@ -207,6 +194,7 @@ var bar = svg.selectAll("g")
 		  .attr("transform", "rotate(-90)")
 		  .attr("y", 6)
 		  .attr("dy", ".71em")
+		  .style("font-size", "12px")
 		  .style("text-anchor", "end")
 		  .text("Response Time (ms)");
 

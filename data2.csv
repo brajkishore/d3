@@ -1,4 +1,4 @@
-method,uri,baseLabel,baseline,label,rt
+method,api,baseLabel,baseline,label,rt
 GET,admin/v1/Users,17.1.6,2.5,build-17.2.2-,2.0
 GET,admin/v1/Users,17.1.6,2.5,build-17.2.2-1,2.6
 GET,admin/v1/Users,17.1.6,2.5,build-17.2.2-2,2.3
