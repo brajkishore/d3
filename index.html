@@ -124,7 +124,7 @@ var fileName=getQueryValue("file");
 var url="https://orahub.oraclecorp.com/cloud-idm-dev/idaas-dev-performance/raw/perfAPIDataStore/"+fileName;
 	
 // Get the data
-d3.csv(url, function(error, data) {
+d3.csv(fileName, function(error, data) {
 	
 	var barWidth=width/data.length;
 	var method='';
